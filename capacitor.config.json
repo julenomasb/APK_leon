@@ -1,0 +1,6 @@
+{
+  "appId": "com.julen.mileon",
+  "appName": "Mi Leon",
+  "webDir": "www",
+  "server": { "androidScheme": "https" }
+}

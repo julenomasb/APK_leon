@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#4F6F5E">
+<title>Mi León · Control de mantenimiento</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="topbar">
+    <div class="topbar-title">
+      <span class="topbar-car">SEAT LEÓN MK1</span>
+      <span class="topbar-sub">1.9 TDI 150 · ARL</span>
+    </div>
+    <button class="km-chip" id="openKmEditor" aria-label="Editar kilómetros">
+      <span id="kmValue">0</span><span class="km-unit">km</span>
+    </button>
+  </header>
+
+  <!-- ===================== ALERTAS ===================== -->
+  <div id="alertBar" class="alert-bar" hidden></div>
+
+  <!-- ===================== TABS ===================== -->
+  <main class="tab-panels">
+
+    <!-- ---------- INICIO ---------- -->
+    <section class="panel active" id="panel-inicio">
+      <div class="stat-grid" id="statGrid"></div>
+
+      <h2 class="section-title">Próximos mantenimientos</h2>
+      <div id="homeMaintList" class="stack"></div>
+
+      <h2 class="section-title">Averías abiertas</h2>
+      <div id="homeIssueList" class="stack"></div>
+    </section>
+
+    <!-- ---------- GASTOS ---------- -->
+    <section class="panel" id="panel-gastos">
+      <div class="subtabs">
+        <button class="subtab-btn active" data-subtab="gastosLista">Gastos</button>
+        <button class="subtab-btn" data-subtab="gastosConsumo">Consumo</button>
+      </div>
+
+      <div class="subpanel active" id="gastosLista">
+        <div class="summary-row" id="expenseSummary"></div>
+        <button class="btn-primary full" id="btnAddExpense">+ Añadir gasto</button>
+        <div id="expenseList" class="stack"></div>
+      </div>
+
+      <div class="subpanel" id="gastosConsumo">
+        <div class="summary-row" id="fuelSummary"></div>
+        <button class="btn-primary full" id="btnAddFuel">+ Registrar repostaje</button>
+        <canvas id="fuelChart" height="140"></canvas>
+        <div id="fuelList" class="stack"></div>
+      </div>
+    </section>
+
+    <!-- ---------- MANTENIMIENTO ---------- -->
+    <section class="panel" id="panel-mantenimiento">
+      <button class="btn-secondary full" id="btnAddMaint">+ Añadir mantenimiento personalizado</button>
+      <div id="maintList" class="stack"></div>
+    </section>
+
+    <!-- ---------- AVERÍAS ---------- -->
+    <section class="panel" id="panel-averias">
+      <button class="btn-primary full" id="btnAddIssue">+ Nueva avería / extra</button>
+      <div id="issueList" class="stack"></div>
+    </section>
+
+    <!-- ---------- MÁS ---------- -->
+    <section class="panel" id="panel-mas">
+      <h2 class="section-title">Documentación del vehículo</h2>
+      <div class="card" id="docsCard">
+        <div class="field-row"><label>Matrícula</label><input type="text" id="docPlate" placeholder="0000 ABC"></div>
+        <div class="field-row"><label>Nº de bastidor (VIN)</label><input type="text" id="docVin" placeholder="VSSZZZ1PZ..."></div>
+        <div class="field-row"><label>Próxima ITV</label><input type="date" id="docItv"></div>
+        <div class="field-row"><label>Aseguradora</label><input type="text" id="docInsurer" placeholder="Nombre"></div>
+        <div class="field-row"><label>Vencimiento seguro</label><input type="date" id="docInsuranceDate"></div>
+        <button class="btn-secondary full" id="btnSaveDocs">Guardar documentación</button>
+      </div>
+
+      <h2 class="section-title">Asistente de averías (IA)</h2>
+      <div class="card">
+        <p class="hint">Para que el chat de averías pueda razonar contigo, indica aquí tu propia clave de API de Anthropic. Se guarda solo en este dispositivo y nunca se envía a ningún sitio salvo a la API oficial de Anthropic.</p>
+        <div class="field-row"><label>Clave API (opcional)</label><input type="password" id="apiKeyInput" placeholder="sk-ant-..."></div>
+        <button class="btn-secondary full" id="btnSaveKey">Guardar clave</button>
+      </div>
+
+      <h2 class="section-title">Datos</h2>
+      <div class="card">
+        <button class="btn-secondary full" id="btnExport">Exportar copia de seguridad</button>
+        <button class="btn-secondary full" id="btnImport">Importar copia de seguridad</button>
+        <input type="file" id="importFile" accept="application/json" hidden>
+        <button class="btn-danger full" id="btnReset">Borrar todos los datos</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== NAV INFERIOR ===================== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="inicio">
+      <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
+      <span>Inicio</span>
+    </button>
+    <button class="nav-btn" data-tab="gastos">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10.5c0-1.2 1.2-2 3-2s3 .8 3 2-1.2 1.6-3 2-3 .8-3 2 1.2 2 3 2 3-.8 3-2"/></svg>
+      <span>Gastos</span>
+    </button>
+    <button class="nav-btn" data-tab="mantenimiento">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 1 5.4-5.4L14.7 6.3z"/></svg>
+      <span>Mantenim.</span>
+    </button>
+    <button class="nav-btn" data-tab="averias">
+      <svg viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
+      <span>Averías</span>
+    </button>
+    <button class="nav-btn" data-tab="mas">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      <span>Más</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ===================== MODAL GENÉRICO (formularios) ===================== -->
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3 id="modalTitle">Título</h3>
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL CHAT AVERÍA ===================== -->
+<div class="modal-backdrop" id="chatBackdrop" hidden>
+  <div class="modal modal-chat" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3 id="chatTitle">Diagnóstico</h3>
+      <button class="modal-close" id="chatClose" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <textarea id="chatInput" placeholder="Describe el síntoma o responde a la pregunta..." rows="1"></textarea>
+      <button id="chatSend" class="btn-primary" aria-label="Enviar">➤</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
